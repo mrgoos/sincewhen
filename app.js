@@ -1,43 +1,54 @@
-const http         = require('http'),
-      fs           = require('fs'),
-      path         = require('path'),
-      contentTypes = require('./utils/content-types'),
-      sysInfo      = require('./utils/sys-info'),
-      env          = process.env;
+//  OpenShift sample Node application
 
-let server = http.createServer(function (req, res) {
-  let url = req.url;
-  if (url == '/') {
-    url += 'index.html';
-  }
+var fs = require('fs');
+var mongodb = require('mongodb');
+var express = require('express');
+//var ejs = require('ejs');
+var http = require('http');
+var env = process.env;
 
-  // IMPORTANT: Your application HAS to respond to GET /health with status 200
-  //            for OpenShift health monitoring
+var app = express();
 
-  if (url == '/health') {
-    res.writeHead(200);
-    res.end();
-  } else if (url.indexOf('/info/') == 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'no-cache, no-store');
-    res.end(JSON.stringify(sysInfo[url.slice(6)]()));
-  } else {
-    fs.readFile('./static' + url, function (err, data) {
-      if (err) {
-        res.writeHead(404);
-        res.end();
-      } else {
-        let ext = path.extname(url).slice(1);
-        res.setHeader('Content-Type', contentTypes[ext]);
-        if (ext === 'html') {
-          res.setHeader('Cache-Control', 'no-cache, no-store');
+app.use(express.static(__dirname + '/public'));
+//app.set('view engine', 'ejs');
+app.get('/getads', function(req, res) {
+    var realIDs = req.query.realIDs.split(',');
+    if (realIDs && realIDs.length) {
+        //avid too large array
+        if (realIDs.length < 60) {
+            var cursor = db.collection('yad2').find({ realID: { $in: realIDs } }, { _id: 0 }).sort({ realID: 1, timestamp: -1 });
+            cursor.toArray(function(err, ids) {
+                if (err) {
+                    console.log('error: Could not fulfill request: ' + err);
+                    res.status(500).send({ error: 'Could not fulfill request: ' + err });
+                } else {
+                    res.status(200).send(ids);
+                    console.log('ids:', ids);
+                }
+            });
+        } else {
+            //array length is too large
+            res.send(500, { error: 'Nice try! :)' });
+            console.log('array length is way too large:', realIDs.length);
         }
-        res.end(data);
-      }
-    });
-  }
+    }
 });
 
-server.listen(env.NODE_PORT || 3000, env.NODE_IP || 'localhost', function () {
-  console.log(`Application worker ${process.pid} started...`);
+var serverIp = env.NODE_IP || 'localhost';
+var serverPort = env.NODE_PORT || 3000;
+var dbUri = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/sincewhen';
+var db;
+var server;
+mongodb.MongoClient.connect(dbUri, { server: { auto_reconnect: true } }, function(err, database) {
+    if (err) {
+        console.log('err: ', err);
+    }
+    else {
+        db = database;
+        console.log('connected to DB!');
+    }
+});
+
+app.listen(serverPort, serverIp, function() {
+    console.log(`App started, listening to port ${serverPort}`);
 });
