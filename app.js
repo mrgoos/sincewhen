@@ -12,7 +12,7 @@ var app = express();
 app.use(express.static(__dirname + '/public'));
 //app.set('view engine', 'ejs');
 app.get('/getads', function(req, res) {
-    var realIDs = req.query.realIDs.split(',');
+    var realIDs = req.query.realIDs && req.query.realIDs.split(',');
     if (realIDs && realIDs.length) {
         //avid too large array
         if (realIDs.length < 60) {
@@ -31,6 +31,10 @@ app.get('/getads', function(req, res) {
             res.send(500, { error: 'Nice try! :)' });
             console.log('array length is way too large:', realIDs.length);
         }
+    } else {
+        //realIDs wasn't sent
+        res.send(500, { error: 'Nice try! :)' });
+        console.log('No IDs were sent');
     }
 });
 
