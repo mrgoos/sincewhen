@@ -54,7 +54,14 @@ app.post('/insertads', function(req, res) {
         console.log('No array sent to post. Got: ', req.body);
     }
 
-})
+});
+
+// IMPORTANT: Your application HAS to respond to GET /health with status 200
+//            for OpenShift health monitoring
+app.get('/health', function(req, res) {
+    res.writeHead(200);
+    res.end();
+});
 
 var serverIp = env.NODE_IP || 'localhost';
 var serverPort = env.NODE_PORT || 3000;
