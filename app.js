@@ -1,10 +1,5 @@
-//  OpenShift sample Node application
-
-var fs = require('fs');
 var mongodb = require('mongodb');
 var express = require('express');
-//var ejs = require('ejs');
-var http = require('http');
 var bodyParser = require('body-parser');
 var env = process.env;
 
@@ -12,8 +7,6 @@ var app = express();
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-
 
-app.use(express.static(__dirname + '/public'));
-//app.set('view engine', 'ejs');
 app.get('/getads', function(req, res) {
     var realIDs = req.query.realIDs && req.query.realIDs.split(',');
     if (realIDs && realIDs.length) {
@@ -43,13 +36,18 @@ app.get('/getads', function(req, res) {
 
 app.post('/insertads', function(req, res) {
     if (Array.isArray(req.body)) {
-          yad2Collection.insert(req.body, function(e, results){
+        //set current timestamp
+        const query = req.body.map(function(queryObj) {
+            queryObj.timestamp = Date.now();
+            return queryObj;
+        });
+        yad2Collection.insert(query, function(e, results) {
             if (e) {
                 res.status(500).send({ error: 'What are you trying to insert???' });
             }
             res.end(results && results.insertedCount && results.insertedCount.toString());
             //console.log(results);
-          })
+        })
     } else {
         //no array set
         res.status(500).send({ error: 'Nice try! :)' });
