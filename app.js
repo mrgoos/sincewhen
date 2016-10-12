@@ -8,7 +8,7 @@ app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-
 
 app.use(function (req, res, next) {
-    res.header('Access-Control-Allow-Origin', ['chrome-extension://pjimdgmggmbaneplkfemdekdaimnojmc', 'chrome-extension://fnoehmncolmbolmanbgjmmpncngogamf']);
+    res.header('Access-Control-Allow-Origin', 'chrome-extension://*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
     next();
