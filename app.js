@@ -1,18 +1,13 @@
 var mongodb = require('mongodb');
 var express = require('express');
 var bodyParser = require('body-parser');
+var cors = require('cors')
 var env = process.env;
 
 var app = express();
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-
-
-app.use(function (req, res, next) {
-    res.header('Access-Control-Allow-Origin', 'chrome-extension://*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    next();
-});
+app.use(cors({ origin: ['chrome-extension://pjimdgmggmbaneplkfemdekdaimnojmc', 'chrome-extension://fnoehmncolmbolmanbgjmmpncngogamf'] }));
 
 app.get('/getads', function (req, res) {
     var realIDs = req.query.realIDs && req.query.realIDs.split(',');
